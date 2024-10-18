@@ -195,12 +195,12 @@ def game_loop(args):
 
             if controller.parse_events(world, clock):
                 return
-            current_time = time.time()
-            if current_time - last_spawn_time >= 10:
-                world.spawn_obstacles()
-                last_spawn_time = current_time
-            if random.random() < 0.01:  # Adjust this value to increase or decrease frequency
-                world.spawn_obstacles()
+            # current_time = time.time()
+            # if current_time - last_spawn_time >= 10:
+            #     world.spawn_obstacles()
+            #     last_spawn_time = current_time
+            # # if random.random() < 0.01:  # Adjust this value to increase or decrease frequency
+            # #     world.spawn_obstacles()
             # Traffic light detection logic
             traffic_light = utils.find_traffic_light(world.player)
             light_state = utils.get_traffic_light_state(traffic_light)
@@ -210,20 +210,66 @@ def game_loop(args):
 
             # Determine which traffic light icon to display
             if light_state == "Red":
-                print("Red traffic light")
+                #print("Red traffic light")
                 traffic_light_icon = red_icon
             elif light_state == "Yellow":
-                print("Yellow traffic light")
+                #print("Yellow traffic light")
                 traffic_light_icon = yellow_icon
             elif light_state == "Green":
-                print("Green traffic light")
+                #print("Green traffic light")
                 traffic_light_icon = green_icon
             else:
                 traffic_light_icon = None
+#########################################
+            # transform = world.player.get_transform()
+            #
+            # # Extract location from the transform
+            # location = transform.location
+            #
+            # # Print the x, y, z coordinates of the car
+            # print(f"Car's Location: x={location.x}, y={location.y}, z={location.z}")
 
+            ################# Lane
+            # transform = world.player.get_transform()
+            #
+            # # Get the CARLA map from the world
+            # carla_map = world.world.get_map()
+            #
+            # # Get the waypoint at the player's current location
+            # waypoint = carla_map.get_waypoint(transform.location)
+            #
+            # # Ensure the waypoint is not None (valid waypoint)
+            # if waypoint is not None:
+            #     # Check if the lane is a driving lane (to exclude parking or sidewalks)
+            #     if waypoint.lane_type == carla.LaneType.Driving:
+            #         lane_id = waypoint.lane_id
+            #
+            #         # Ignore lanes on the opposite side (lane_id < 0)
+            #         if lane_id < 0:
+            #             if lane_id == 1:
+            #                 print("The car is in the right lane (slow lane).")
+            #             elif lane_id == 2:
+            #                 print("The car is in the left lane (fast lane).")
+            #             else:
+            #                 print(f"Driving in lane ID: {lane_id}")
+            #         else:
+            #             print("The car is on the opposite side of the road. Ignoring this lane.")
+            #     else:
+            #         print("The car is not in a driving lane (e.g., on a sidewalk or parking).")
+            # else:
+            #     print("Could not retrieve the waypoint. The car might be off-road.")
+
+            ###########################
             # Render the world, passing the traffic light icon
+            # Show lane change information
+            #utils.show_lane_change_info(world)
             world.tick(clock)
-            world.render(display, traffic_light_icon=traffic_light_icon)
+
+            ############## 10/ 17/24
+            #world.render(display, traffic_light_icon=traffic_light_icon)
+            lane_change_icon, lane_change_text = utils.show_lane_change_info( world)
+            world.render(display, lane_change_icon=lane_change_icon, lane_change_text=lane_change_text)
+            ################
 
             # Update the display after rendering everything
             pygame.display.flip()

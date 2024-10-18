@@ -96,6 +96,11 @@ class World(object):
 
 
     def restart(self):
+        ##################### 10/17/24
+        fixed_spawn_point = carla.Transform(
+            carla.Location(x=109, y=47, z=0),  # Set these to your desired coordinates
+            carla.Rotation(pitch=0, yaw=270, roll=0))
+        ####################
         # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0
@@ -113,15 +118,25 @@ class World(object):
             spawn_point.rotation.roll = 0.0
             spawn_point.rotation.pitch = 0.0
             self.destroy()  # Destroy the current player vehicle before respawning
-            self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+
+            ############# 10/17/24
+           # self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            self.player = self.world.try_spawn_actor(blueprint, fixed_spawn_point)
+            ##############
         else:
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
-            self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            ############# 10/17/24
+            # self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            self.player = self.world.try_spawn_actor(blueprint, fixed_spawn_point)
+            ##############
         while self.player is None:
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
-            self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            ############# 10/17/24
+            # self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            self.player = self.world.try_spawn_actor(blueprint, fixed_spawn_point)
+            ##############
         # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player, self.hud)
         self.lane_invasion_sensor = LaneInvasionSensor(self.player, self.hud)
@@ -276,7 +291,8 @@ class World(object):
     #
     #     self.draw_dashboard(display)  # Call your other rendering functions
 
-    def render(self, display,  traffic_light_icon=None):
+##################### 10/17/24
+    def render(self, display,  traffic_light_icon=None,  lane_change_icon=None, lane_change_text=None):
         self.camera_manager.render(display)  # Render the camera view
         self.hud.render(display)  # Render the HUD (temporarily comment this if testing)
         if traffic_light_icon:
@@ -292,10 +308,21 @@ class World(object):
                 del self.danger_sign_image
                 del self.danger_sign_position
                 del self.danger_sign_start_time
+        display_width, display_height = display.get_size()
+        if lane_change_icon:
+            icon_width, icon_height = lane_change_icon.get_size()
+            display.blit(lane_change_icon, ((display_width - icon_width) // 2, 10))  # Centered horizontally at the top
+            # Show lane change text, if present
+        if lane_change_text:
+            font = pygame.font.Font(None, 36)  # Adjust font size as needed
+            text_surface = font.render(lane_change_text, True, (255, 0, 0))  # White text
+            text_width, text_height = text_surface.get_size()
+            display.blit(text_surface, ((display_width - text_width) // 2, icon_height + 20))  # Centered below the icon
+
 
         # Render the dashboard last to ensure it appears on top of other elements
         self.draw_dashboard(display)  # Temporarily comment this if testing
-
+##############################
     def destroy(self):
         sensors = [
             self.camera_manager.sensor,

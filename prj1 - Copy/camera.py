@@ -118,3 +118,5 @@ class CameraManager(object):
 
         if self.recording:
             image.save_to_disk(f'_out/{index}_{image.frame:08d}')
+
+

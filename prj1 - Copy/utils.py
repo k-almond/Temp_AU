@@ -1,5 +1,6 @@
 import carla
 import re
+import pygame
 
 
 def find_weather_presets():
@@ -97,4 +98,57 @@ def get_traffic_light_state(light):
         #print(f"{light}- Green")
         return "Green"
     return "Off"
+################### 10/17/24
 
+################### 10/17/24
+trigger_locations = [
+    carla.Location(x=110, y=-17, z=0),
+    carla.Location(x=33, y=-64, z=0),
+    carla.Location(x=-110, y=-6, z=0),
+    carla.Location(x=-59, y=136, z=0),
+    carla.Location(x=106, y=69, z=0)
+]
+
+# Distance threshold to check if car is near a trigger location
+location_threshold = 5.0
+def show_lane_change_info(world):
+    """
+    Prepare lane change icons and text based on the car's lane.
+    Returns: lane_change_icon, lane_change_text
+    """
+    try:
+        # Load the lane change icons
+        lane_change_left_icon = pygame.image.load("LaneChangeLeft.png")
+        lane_change_left_icon = pygame.transform.scale(lane_change_left_icon, (224, 113))
+        lane_change_right_icon = pygame.image.load("LaneChangeRight.png")
+        lane_change_right_icon = pygame.transform.scale(lane_change_right_icon, (224, 113))
+    except pygame.error as e:
+        print(f"Failed to load lane change images: {e}")
+        return None, None
+
+    # Get the player's (car's) current location
+    current_location = world.player.get_transform().location
+
+    # Check if the car is near any of the trigger locations
+    for loc in trigger_locations:
+        if current_location.distance(loc) <= location_threshold:
+            # Get the waypoint and lane ID
+            carla_map = world.world.get_map()
+            waypoint = carla_map.get_waypoint(current_location)
+
+            if waypoint and waypoint.lane_type == carla.LaneType.Driving:
+                lane_id = waypoint.lane_id
+
+                # Determine which lane change icon and text to display
+                if lane_id == -1:
+                    # Show the left lane change icon and text
+                    return lane_change_right_icon, "Change Lane"
+                elif lane_id == -2:
+                    # Show the right lane change icon and text
+                    return lane_change_left_icon, "Change Lane"
+
+    # No lane change, return None
+    return None, None
+
+
+#######################
